@@ -1,12 +1,10 @@
 shader_type spatial;
 render_mode cull_disabled;
 
-// 78736f
-// aea9a5
-
 uniform vec4 base_color: hint_color;
-uniform vec4 alternate_color: hint_color;
 uniform sampler2D noise_texture;
+uniform vec4 checker_a: hint_color;
+uniform vec4 checker_b: hint_color;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -14,7 +12,7 @@ varying vec3 world_tangent;
 varying float wall;
 
 const float line_width = 0.025;
-const float area_scale = 0.04;
+const float area_scale = 0.013;
 
 float random_f(vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
@@ -45,7 +43,7 @@ float concrete_bumps(vec3 pos, vec3 normal, sampler2D source) {
 
 float concrete_detail_bumps(vec3 pos, vec3 normal, sampler2D source) {
 	float depth = map_range(noise(pos, normal, source).x, 0.0, 0.4, 0.0, 1.0);
-	float area = map_range(noise(pos * area_scale, normal, source).x, 0.49, 0.5, 0.9, 1.0);
+	float area = map_range(noise(pos * area_scale, normal, source).x, 0.49, 0.5, 0.0, 1.0);
 	float detail = map_range(noise(pos * 4.0, normal, source).x, 0.5, 0.6, 0.8, 1.0);
 	if (wall < 0.5)
 		return (((depth * area) + (1.0 - area)) * detail);
@@ -72,6 +70,7 @@ float checker(vec3 pos) {
 	}
 	return 1.0;
 }
+
 
 void vertex() {
 	world_pos = (WORLD_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -102,13 +101,16 @@ void fragment() {
 	roughness = map_range(noise(sample_pos * 0.02, world_normal, noise_texture).r, 0.4, 0.7, 0.0, 1.0);
 	float area = map_range(noise(sample_pos * scale * area_scale, world_normal, noise_texture).x, 0.499, 0.5, 1.0, 0.0);
 	if (wall > 0.5)
-		roughness = (((roughness * area) + (1.0 - area)) * .2) + .6;
+		roughness = (((roughness * area) + (1.0 - area)) * .2) + .5;
 	else
-		roughness = (roughness * 0.2) + .6;
+		roughness = roughness * 0.2 + 0.5;
 
-	float checker = map_range(noise(sample_pos * 0.03, world_normal, noise_texture).x, 0.3, 0.7, 0.7, 1.0);
+	float checker = checker(world_pos) * map_range(noise(sample_pos * 0.03, world_normal, noise_texture).x, 0.3, 0.7, 0.7, 1.0);
 	checker *= area;
-	color = mix(base_color, alternate_color, area).rgb;
+	if (wall > 0.5)
+		color = mix(base_color, mix(checker_a, checker_b, checker), area).rgb;
+	else
+		color = base_color.rgb;
 
 	vec3 b = world_tangent;
 	vec3 c = cross(b, world_normal);

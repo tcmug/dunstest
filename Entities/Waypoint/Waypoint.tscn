@@ -28,7 +28,7 @@ tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = PoolRealArray( 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1.5, 0, 0, 0, 0, 1, 1, 1, 1, 2, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1 )
 
-[node name="Waypoint" type="Area"]
+[node name="Waypoint" type="Area" groups=["waypoints"]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10 )
 script = ExtResource( 1 )
 

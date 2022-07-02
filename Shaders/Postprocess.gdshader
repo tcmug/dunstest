@@ -3,6 +3,7 @@ render_mode unshaded, blend_disabled;
 
 uniform vec3 blur = vec3(.0, .0, .0);
 const float noise_scale = 320.0;
+const bool motion_blur = true;
 
 float random_f(vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
@@ -34,18 +35,19 @@ vec3 adjust(vec3 color, vec3 adjust, float point, float steepness) {
 
 vec4 sample(sampler2D source, vec2 uv, vec3 blur_specs) {
 	//if (blur.z == 0.0)
-	return texture(source, uv);
-//	vec4 blurred;
-//	// vec2 blur_vector = (uv - blur_specs.xy);
-//	vec2 blur_vector = blur_specs.xy;
-//	int i = -5;
-//	while (i <= 5) {
-//		blurred += texture(source, uv + (blur_vector * float(i)));
-//		i++;
-//	}
-//	blurred = blurred / float(i * 2);
-//	blurred.a = 1.0;
-//	return blurred;
+	if (!motion_blur)
+		return texture(source, uv);
+	vec4 blurred;
+	// vec2 blur_vector = (uv - blur_specs.xy);
+	vec2 blur_vector = blur_specs.xy;
+	int i = -5;
+	while (i <= 5) {
+		blurred += texture(source, uv + (blur_vector * float(i)));
+		i++;
+	}
+	blurred = blurred / float(i * 2);
+	blurred.a = 1.0;
+	return blurred;
 }
 
 void fragment() {
@@ -61,5 +63,5 @@ void fragment() {
 	//vec4 noise_in = vec4(random_t(stepped_uv, TIME));
 	//float lightness = max(frag_in.r, max(frag_in.g, frag_in.b));
 	//COLOR.rgb = mix(noise_in, frag_in, 0.8).rgb;
-	COLOR.rgb = frag_in.rgb;
+	COLOR.rgb = frag_in.rgb;// + texture(ui, uv - blur.xy).rgb;
 }

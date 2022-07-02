@@ -2,12 +2,18 @@ extends GridMap
 tool
 
 export var use_variations := true
-export var click_to_smooth = false setget run_smooth_map
+export var click_to_smooth = false setget set_click_to_smooth
+
+# Future stuff.
+export(String, FILE, "*.tres") var hardpoints_filename
+
+signal map_ready
 
 var block_logic = null
 var cell_specs = {}
+var hardpoints = {}
 
-func run_smooth_map(a):
+func set_click_to_smooth(a):
 	smooth_map()
 
 func get_model(models):
@@ -190,7 +196,7 @@ func plot(x: int, y: int, z: int, id = 0, axis = null):
 		set_cell_item(x, y, z, id)
 
 func minmax_range(a: int, b: int):
-	return range(min(a, b), max(a, b))
+	return range(min(a, b), max(a, b) + 1)
 
 func fill_room(a: Vector3, b: Vector3):
 	var id = 0
@@ -198,12 +204,10 @@ func fill_room(a: Vector3, b: Vector3):
 		for z in minmax_range(a.z, b.z):
 			for x in minmax_range(a.x, b.x):
 				set_cell_item(x, y, z, id)
-				print(x, ' ', y, ' ', z)
-	smooth_map()
 
 func get_cell(x: int, y: int, z: int):
 	return get_cell_item(x, y, z)
-	
+
 func _is_smoothable(x, y, z):
 	var cell = get_cell_item(x, y, z)
 	if cell == -1:
@@ -260,11 +264,39 @@ func _smoothen(x: int, y: int, z: int):
 func smooth_map():
 	_precalculate()
 	print("GENE: architecturing")
-	for y in range(-5, 5):
+	for y in range(-10, 10):
 		for z in range(-50, 50):
 			for x in range(-50, 50):
 				_smoothen(x, y, z)
 	print("GENE: done!")
+	
+var random_protos = {
+	'wall': [
+	],
+	'ceil': [
+	],
+	'ac': [
+	],
+	'door': [
+	],
+}
 
 func clear_map():
 	clear()
+
+func _ready():
+	if not hardpoints_filename:
+		print("No hardpoints!")
+		hardpoints = {}
+	else:
+		var file = File.new()
+		file.open(hardpoints_filename, File.READ)
+		hardpoints = file.get_var()
+		# Do stuff with hardpoints.
+		
+func boom(pos: Vector3):
+	var temp = world_to_map(pos)
+	fill_room(
+		temp + Vector3(-1, -1, -1),
+		temp + Vector3(1, 1, 1)
+	)

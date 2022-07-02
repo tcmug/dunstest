@@ -13,12 +13,15 @@ var walljumps := 0
 const MAX_WALL_JUMPS = 3
 const MAX_SPEED = 100.0
 
+# Gravity is multiplied because "fun factor"
+const GRAVITY = Vector3(0, -9.8, 0) * 5.5
+
 onready var puff = preload("res://Entities/Puff/Puff.tscn")
 
 func turn(amount: Vector2):
 	rotate_y(deg2rad(-amount.x))
 	var new_angle = rad2deg($Head.rotation.x) - amount.y
-	if new_angle < 90 and new_angle > -90:
+	if new_angle < 80 and new_angle > -80:
 		$Head.rotate_x(deg2rad(-amount.y))
 
 func move(amount: Vector3):
@@ -27,22 +30,21 @@ func move(amount: Vector3):
 		trx.origin = Vector3.ZERO
 		linear_velocity += trx.xform(amount)
 
-func get_gravity() -> Vector3:
+func get_gravity(delta) -> Vector3:
 	if is_on_wall():
-		return  Vector3(0, -0.35, 0)
-	return Vector3(0, -0.9, 0)
+		return GRAVITY * delta * 0.7
+	return GRAVITY * delta
 	
 func _physics_process(delta):
-	var planar_vel = linear_velocity
-	planar_vel.y = 0
+	var planar_vel = Vector2(linear_velocity.x, linear_velocity.z)
 	if planar_vel.length() > MAX_SPEED:
 		planar_vel = planar_vel.normalized() * MAX_SPEED
 	linear_velocity.x = planar_vel.x
-	linear_velocity.z = planar_vel.z
-
+	linear_velocity.z = planar_vel.y
+	linear_velocity += get_gravity(delta)
 	emit_sounds()
 
-	linear_velocity = move_and_slide(linear_velocity + get_gravity(), Vector3.UP)
+	linear_velocity = move_and_slide(linear_velocity, Vector3.UP)
 	if is_on_floor() or is_on_wall():
 		# SLOW down when in contact
 		can_jump = true
@@ -54,19 +56,19 @@ func emit_sounds():
 	var difference = linear_velocity - previous_linear_velocity
 	if difference.y > 10:
 		var p = puff.instance()
-		
 		p.translation = translation
 		p.emitting = true
-	
 		if linear_velocity.y < 10:
 			$SfxLand.play()
+			get_node("/root/Game/Helmet").flicker(0.5)
 			p.scale = Vector3(2, 2, 2)
 		else:
 			p.scale = Vector3(1, 1, 1)
 			$SfxJump.play()
 		get_parent().add_child(p)
 		
-	if is_on_floor():
+		
+	if is_on_floor() || is_on_wall():
 		var tnow = global_transform.origin
 		var distance_traveled = tnow - previous_translation
 		previous_translation = tnow

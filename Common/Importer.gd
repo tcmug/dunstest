@@ -1,6 +1,9 @@
 tool
 extends EditorScenePostImport
 
+var hardpoints = {}
+var save_hardpoints := false
+
 const material_override = preload("res://Matty.material")
 
 var model_name_prefixes = [
@@ -20,6 +23,18 @@ func is_model_name(name: String):
 			
 	return false
 
+func add_hardpoint(parent, type, pos):
+	if !parent in hardpoints:
+		hardpoints[parent] = { type: [] }
+	elif !type in hardpoints[parent]:
+		hardpoints[parent][type] = []
+	if Engine.is_editor_hint():
+		if pos.origin.max_axis() > 5:
+			print("Possibly faulty hardpoint ", parent, " type ", type, pos.origin)
+		else:
+			print("Added hardpoint ", parent, " type ", type, pos.origin)
+	hardpoints[parent][type].append(pos)
+	
 func post_import(scene):
 	for child in scene.get_children():
 		var name = child.name
@@ -40,10 +55,18 @@ func post_import(scene):
 				# Solve actual position within the block:
 				var trx: Transform = child.transform
 				trx.origin = child.translation - parent.translation
+				add_hardpoint(parent_name, type, trx)
 				scene.remove_child(child)
 		elif is_model_name(name):
 			print("Added model ", name)
 		else:
 			scene.remove_child(child)
 
+	if save_hardpoints:
+		var file = File.new()
+		var filename = "res://Generated/%s-hardpoints.tres" % (scene.name)
+		file.open(filename, File.WRITE)
+		file.store_var(hardpoints)
+		file.close()
+		print("Saved ", filename)
 	return scene

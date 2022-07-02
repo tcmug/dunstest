@@ -5,6 +5,11 @@ signal timeout
 
 var num_waypoints = 0
 
+func _ready():
+	yield(get_tree(), "idle_frame") 
+	num_waypoints = len(get_tree().get_nodes_in_group('waypoints'))
+	print("WAYPOINTS: %s" % [num_waypoints])
+
 func pickup(item):
 	num_waypoints -= 1
 	if not $OutOfTime.visible:

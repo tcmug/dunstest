@@ -37,7 +37,7 @@ State="*res://State.gd"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/projected_decal/plugin.cfg" )
+enabled=PoolStringArray(  )
 
 [global]
 

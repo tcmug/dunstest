@@ -22,7 +22,7 @@ func _process(delta):
 func pickup(item):
 	if timeout: return
 	if not is_processing():
-		get_node("/root/Level/Music").play()
+		get_node("/root/Game/Music").play()
 		visible = true
 		set_process(true)
 	$SfxPickup.play()

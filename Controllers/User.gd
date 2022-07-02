@@ -1,6 +1,6 @@
 extends Spatial
 
-const MOUSE_SPEED := 0.125
+const MOUSE_SPEED := 10.0
 onready var controlled: Controllable = get_parent()
 var mouse_movement: Vector2
 
@@ -32,7 +32,7 @@ func _physics_process(delta):
 
 	# Look
 	if mouse_movement.length() > 0:
-		controlled.turn(mouse_movement)
+		controlled.turn(mouse_movement * delta * MOUSE_SPEED)
 		mouse_movement = Vector2(0, 0)
 
 	# Quit
@@ -41,5 +41,5 @@ func _physics_process(delta):
 
 func _input(event):
 	if event is InputEventMouseMotion:
-		mouse_movement += event.relative * MOUSE_SPEED
+		mouse_movement += event.relative
 	
