@@ -127,7 +127,6 @@ delay = 20.0
 [node name="MeshInstance" type="MeshInstance" parent="Helmet"]
 material_override = SubResource( 320 )
 mesh = ExtResource( 3 )
-material/0 = null
 
 [connection signal="timeout" from="UI/Screen" to="." method="_on_Screen_timeout"]
 [connection signal="victory" from="UI/Screen" to="." method="_on_Screen_victory"]

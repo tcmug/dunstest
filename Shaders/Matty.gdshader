@@ -39,7 +39,7 @@ float map_range(float v, float smin, float smax, float tmin, float tmax) {
 
 float concrete_bumps(vec3 pos, vec3 normal, sampler2D source) {
 	float depth = map_range(noise(pos, normal, source).x, 0.0, 0.4, 0.0, 1.0);
-	float area = map_range(noise(pos  area_scale, normal, source).x, 0.5, 0.6, 0.0, 1.0);
+	float area = map_range(noise(pos * area_scale, normal, source).x, 0.5, 0.6, 0.0, 1.0);
 	return (depth * area) + (1.0 - area);
 }
 
@@ -83,12 +83,7 @@ void vertex() {
 }
 
 void fragment() {
-
-	if (!FRONT_FACING) {
-		ALBEDO = vec3(1.0, 1.0, 1.0);
-		return;
-	}
-
+	
 	float scale = 0.4;
 	vec3 color = vec3(0.0);
 	vec3 normal = vec3(0.0);
